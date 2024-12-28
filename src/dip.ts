@@ -1,47 +1,69 @@
 //* Wrong approach
-// class EmailNotification {
-//   sendEmail(message: string): void {
-//     console.log(`Sending Email: ${message}`);
+// class PayPalPayment {
+//   processPayment(amount: number): void {
+//     console.log(`Processing payment of $${amount} through PayPal.`);
 //   }
 // }
 
-// class NotificationManager {
-//   private emailNotification = new EmailNotification();
+// class PaymentService {
+//   private paymentProcessor = new PayPalPayment(); // Direct dependency on a specific payment method
 
-//   notify(message: string): void {
-//     this.emailNotification.sendEmail(message); // Directly depends on a specific class
+//   makePayment(amount: number): void {
+//     this.paymentProcessor.processPayment(amount); // Tightly coupled to PayPal
 //   }
 // }
+
+// // Using the service
+// const paymentService = new PaymentService();
+// paymentService.makePayment(100); // Only PayPal is supported
+
 
 
 //* Correct approach
 
-interface NotificationService {
-  sendNotification(message: string): void;
+// Define an abstraction for payment processors
+interface PaymentProcessor {
+  processPayment(amount: number): void;
 }
 
-class EmailNotification implements NotificationService {
-  sendNotification(message: string): void {
-    console.log(`Sending Email: ${message}`);
+// Concrete implementation for PayPal
+class PayPalPayment implements PaymentProcessor {
+  processPayment(amount: number): void {
+    console.log(`Processing payment of $${amount} through PayPal.`);
   }
 }
 
-class SMSNotification implements NotificationService {
-  sendNotification(message: string): void {
-    console.log(`Sending SMS: ${message}`);
+// Concrete implementation for Stripe
+class StripePayment implements PaymentProcessor {
+  processPayment(amount: number): void {
+    console.log(`Processing payment of $${amount} through Stripe.`);
   }
 }
 
-class NotificationManager {
-  constructor(private notificationService: NotificationService) {}
-
-  notify(message: string): void {
-    this.notificationService.sendNotification(message);
+// Concrete implementation for Cash
+class CashPayment implements PaymentProcessor {
+  processPayment(amount: number): void {
+    console.log(`Processing payment of $${amount} in cash.`);
   }
 }
 
-const emailNotifier = new NotificationManager(new EmailNotification());
-emailNotifier.notify("Welcome!");
+// PaymentService depends on abstraction
+class PaymentService {
+  constructor(private paymentProcessor: PaymentProcessor) {}
 
-const smsNotifier = new NotificationManager(new SMSNotification());
-smsNotifier.notify("Welcome!");
+  makePayment(amount: number): void {
+    this.paymentProcessor.processPayment(amount);
+  }
+}
+
+// Using the service
+const paypalService = new PaymentService(new PayPalPayment());
+paypalService.makePayment(100); // Processed through PayPal
+
+const stripeService = new PaymentService(new StripePayment());
+stripeService.makePayment(200); // Processed through Stripe
+
+const cashService = new PaymentService(new CashPayment());
+cashService.makePayment(50); // Processed in cash
+
+
